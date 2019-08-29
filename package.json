@@ -5,7 +5,7 @@
   "repository": "https://github.com/scentbird/zina.git",
   "author": "Pavel Ivanov <grammka@gmail.com>",
   "license": "MIT",
-  "private": true,
+  "private": false,
   "main": "lib/index.js",
   "files": [
     "lib"
