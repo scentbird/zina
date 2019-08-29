@@ -168,5 +168,7 @@ Zina.prototype.init = function () {
   }
 }
 
+Zina.prototype.reload = function () {}
+
 
 export default Zina
