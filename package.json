@@ -11,9 +11,9 @@
     "lib"
   ],
   "scripts": {
-    "clean": "rimraf ./lib",
     "dev": "NODE_ENV=development webpack --config webpack.config.babel.js --watch",
-    "build": "NODE_ENV=production webpack --config webpack.config.babel.js"
+    "build": "NODE_ENV=production webpack --config webpack.config.babel.js",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
