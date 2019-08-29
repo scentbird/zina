@@ -1,7 +1,9 @@
-const debounce = (action, time) => {
+/* eslint-disable */
+
+function debounce(action, time) {
   let timeout = null
 
-  return () => {
+  return function () {
     if (timeout) {
       clearTimeout(timeout)
     }
@@ -13,8 +15,8 @@ const debounce = (action, time) => {
 
 const instances = []
 
-const handleWindowResize = debounce(() => {
-  instances.forEach((instance) => {
+const handleWindowResize = debounce(function () {
+  instances.forEach(function (instance) {
     instance.reload()
   })
 }, 300)
@@ -22,139 +24,147 @@ const handleWindowResize = debounce(() => {
 window.addEventListener('resize', handleWindowResize)
 
 
-class ZinaImage {
-
-  constructor(zina, node) {
-    if (!node) {
-      throw new Error('Missed node element.')
-    }
-
-    this.zina   = zina
-    this.node   = node
-    this.attrs  = this.getAttrs()
-    this.src    = this.getSrc()
-    this.bounds = this.getBounds()
-
-    this.setSrc()
+function ZinaImage(zina, node) {
+  if (!node) {
+    throw new Error('Missed node element.')
   }
 
-  getAttrs() {
-    return {
-      both: this.node.getAttribute(this.zina.opts.srcAttr),
-      width: this.node.getAttribute(this.zina.opts.widthSrcAttr),
-      height: this.node.getAttribute(this.zina.opts.heightSrcAttr),
-    }
-  }
+  this.zina   = zina
+  this.node   = node
+  this.attrs  = this.getAttrs()
+  this.src    = this.getSrc()
+  this.bounds = this.getBounds()
 
-  getSrc() {
-    const { both, width, height } = this.attrs
+  this.setSrc()
+}
 
-    return both || width || height
-  }
-
-  getBounds() {
-    return {
-      width: this.node.clientWidth,
-      height: this.node.clientHeight,
-    }
-  }
-
-  setSrc() {
-    const isImgTag  = this.node.tagName === 'IMG'
-    const src       = this.modifySrc()
-
-    if (isImgTag) {
-      this.node.src = src
-    }
-    else {
-      this.node.style.backgroundImage = `url("${src}")`
-      this.node.style.backgroundSize  = 'contain'
-    }
-  }
-
-  modifySrc() {
-    const multiplier  = window.devicePixelRatio || 1
-    const baseUrl     = /^http/.test(this.src) ? '' : this.zina.opts.baseUrl
-    let queries = []
-
-    if (this.attrs.both || this.attrs.width) {
-      queries.push(`${this.zina.opts.widthQueryKey}=${parseInt(this.bounds.width * multiplier, 10)}`)
-    }
-
-    if (this.attrs.both || this.attrs.height) {
-      queries.push(`${this.zina.opts.heightQueryKey}=${parseInt(this.bounds.height * multiplier, 10)}`)
-    }
-
-    return `${baseUrl}${this.src}?lambdaResize=1&${queries.join('&')}`
+ZinaImage.prototype.getAttrs = function () {
+  return {
+    both: this.node.getAttribute(this.zina.opts.srcAttr),
+    width: this.node.getAttribute(this.zina.opts.widthSrcAttr),
+    height: this.node.getAttribute(this.zina.opts.heightSrcAttr),
   }
 }
 
-class Zina {
+ZinaImage.prototype.getSrc = function () {
+  const { both, width, height } = this.attrs
 
-  constructor(opts) {
-    this.opts = {
-      baseUrl: '',
-      srcAttr: 'data-zina-src',
-      widthSrcAttr: 'data-zina-width-src',
-      heightSrcAttr: 'data-zina-height-src',
-      loadingClass: 'zina-loading',
-      widthQueryKey: 'w',
-      heightQueryKey: 'h',
-      onError: null,
-      ...opts,
-    }
+  return both || width || height
+}
 
-    this.items = new Map()
+ZinaImage.prototype.getBounds = function () {
+  return {
+    width: this.node.clientWidth,
+    height: this.node.clientHeight,
+  }
+}
 
-    if (!this.opts.baseUrl) {
-      throw new Error('"baseUrl" is required.')
-    }
+ZinaImage.prototype.setSrc = function () {
+  const isImgTag  = this.node.tagName === 'IMG'
+  const src       = this.modifySrc()
 
-    instances.push(this)
+  if (isImgTag) {
+    this.node.src = src
+  }
+  else {
+    this.node.style.backgroundImage = `url("${src}")`
+    this.node.style.backgroundSize  = 'contain'
+  }
+}
+
+ZinaImage.prototype.modifySrc = function () {
+  const multiplier  = window.devicePixelRatio || 1
+  const baseUrl     = /^http/.test(this.src) ? '' : this.zina.opts.baseUrl
+
+  let src = `${baseUrl}${this.src}?lambdaResize=1`
+  let queries = []
+
+  if ((this.attrs.both || this.attrs.width) && this.bounds.width) {
+    queries.push(`${this.zina.opts.widthQueryKey}=${parseInt(this.bounds.width * multiplier, 10)}`)
   }
 
-  addItem(node) {
-    if (node) {
-      if (!this.items.has(node)) {
-        this.items.set(node, new ZinaImage(this, node))
-      }
-      else {
-        this.handleError('Passed node element already exists.')
-      }
+  if ((this.attrs.both || this.attrs.height) && this.bounds.height) {
+    queries.push(`${this.zina.opts.heightQueryKey}=${parseInt(this.bounds.height * multiplier, 10)}`)
+  }
+
+  if (queries.length) {
+    src += `&${queries.join('&')}`
+  }
+
+  return src
+}
+
+
+function Zina(opts) {
+  this.opts = {
+    baseUrl: '',
+    srcAttr: 'data-zina-src',
+    widthSrcAttr: 'data-zina-width-src',
+    heightSrcAttr: 'data-zina-height-src',
+    loadingClass: 'zina-loading',
+    widthQueryKey: 'w',
+    heightQueryKey: 'h',
+    onError: null,
+  }
+  this.items = new Map()
+
+  const keys = Object.keys(opts)
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+
+    if (opts.hasOwnProperty(key)) {
+      this.opts[key] = opts[key]
+    }
+  }
+
+  if (!this.opts.baseUrl) {
+    throw new Error('"baseUrl" is required.')
+  }
+
+  instances.push(this)
+}
+
+Zina.prototype.addItem = function (node) {
+  if (node) {
+    if (!this.items.has(node)) {
+      this.items.set(node, new ZinaImage(this, node))
     }
     else {
-      this.handleError('Missed node element.')
+      this.handleError('Passed node element already exists.')
     }
   }
-
-  removeItem(node) {
-    this.items.delete(node)
+  else {
+    this.handleError('Missed node element.')
   }
+}
 
-  handleError(err) {
-    if (typeof this.opts.onError === 'function') {
-      this.opts.onError(err)
-    }
-    else {
-      console.error(err)
+Zina.prototype.removeItem = function (node) {
+  this.items.delete(node)
+}
+
+Zina.prototype.handleError = function (err) {
+  if (typeof this.opts.onError === 'function') {
+    this.opts.onError(err)
+  }
+  else {
+    console.error(err)
+  }
+}
+
+Zina.prototype.init = function () {
+  const nodes1  = [].slice.call(document.querySelectorAll(`[${this.opts.srcAttr}]`))
+  const nodes2  = [].slice.call(document.querySelectorAll(`[${this.opts.widthSrcAttr}]`))
+  const nodes3  = [].slice.call(document.querySelectorAll(`[${this.opts.heightSrcAttr}]`))
+  const nodes   = [].concat(nodes1, nodes2, nodes3)
+
+  if (nodes.length) {
+    for (let i = 0; i < nodes.length; i++) {
+      this.addItem(nodes[i])
     }
   }
-
-  init() {
-    const nodes = [
-      ...document.querySelectorAll(`[${this.opts.srcAttr}]`),
-      ...document.querySelectorAll(`[${this.opts.widthSrcAttr}]`),
-      ...document.querySelectorAll(`[${this.opts.heightSrcAttr}]`),
-    ]
-
-    if (nodes.length) {
-      nodes.forEach((node) => {
-        this.addItem(node)
-      })
-    }
-    else {
-      console.warn('Zina: Nodes not found.')
-    }
+  else {
+    console.warn('Zina: Nodes not found.')
   }
 }
 
