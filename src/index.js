@@ -16,9 +16,9 @@ function debounce(action, time) {
 const instances = []
 
 const handleWindowResize = debounce(function () {
-  instances.forEach(function (instance) {
-    instance.reload()
-  })
+  for (let i = 0; i < instances.length; i++) {
+    instances[i].reload();
+  }
 }, 300)
 
 window.addEventListener('resize', handleWindowResize)
