@@ -5,7 +5,7 @@ module.exports = {
 
   mode: process.env.NODE_ENV || 'production',
 
-  entry: path.resolve(__dirname, `./src/index.js`),
+  entry: path.resolve(__dirname, `./src/index.ts`),
 
   output: {
     path: path.join(__dirname, 'lib'),
@@ -18,7 +18,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.ts$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
       }
