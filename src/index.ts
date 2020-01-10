@@ -24,7 +24,7 @@ const loadImage = (src: string, onLoad?: Function, onError?: Function) => {
   const img = new Image()
 
   img.onload = () => onLoad()
-  img.onerror = (err) => onError(err)
+  img.onerror = () => onError()
 
   img.src = src
 }
@@ -68,17 +68,12 @@ Zina.prototype.process = function(node: HTMLImageElement) {
       setSrc(node, src)
     }
     else {
-      const onError = (err) => {
-        console.error(err)
-
+      const onError = () => {
         if (fallbackSrc) {
           loadImage(
             src,
             () => setSrc(node, src),
-            (err) => {
-              console.error(err)
-              setSrc(node, fallbackSrc)
-            }
+            () => setSrc(node, fallbackSrc)
           )
         }
         else {
@@ -95,16 +90,17 @@ Zina.prototype.process = function(node: HTMLImageElement) {
         const baseUrl     = /^(\/\/|http)/.test(imagePath) ? '' : this.opts.baseUrl
         const multiplier  = window.devicePixelRatio || 1
         const resizeQuery = `${resizeKey}=${resizeValue * multiplier}`
-        const modifiedSrc = `${baseUrl}${imagePath}?${resizeQuery}${initialQuery ? '&' : ''}${initialQuery}`
+        const modifiedSrc = `${baseUrl.replace(/\/$/, '')}/${imagePath.replace(/^\//, '')}?${resizeQuery}${initialQuery ? '&' : ''}${initialQuery}`
 
         loadImage(
           modifiedSrc,
           () => setSrc(node, modifiedSrc),
-          (err) => onError(err)
+          () => onError()
         )
       }
       catch (err) {
-        onError(err)
+        console.error(err)
+        onError()
       }
     }
   }
