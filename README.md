@@ -9,15 +9,16 @@ import Zina from 'zina'
 window.zina = new Zina({
   baseUrl: 'https://cdn.domain.com/',
   srcAttr: 'data-zina-src',
+  resizeByAttr: 'data-zina-resize-by',
+  fallbackSrcAttr: 'data-zina-fallback-src',
+  loadingClass: 'zina-loading',
   widthQueryKey: 'w',
   heightQueryKey: 'h',
-  loadingClass:  'zina-loading',
-  onError: (err) => {
-    console.error(err)
-  },
 })
 
-window.zina.init() // execute script on existing images
+window.zina.processAll() // execute script on existing images
+
+window.zina.process(someImageNode) // execute script on demand
 ```
 
 
@@ -28,11 +29,11 @@ Containers must be sized for the image. You need to add styles for this.
 ```html
 // image
 <div class="container">
-  <img data-zina-src="image.png" />
+  <img width="100" data-zina-src="image.png" />
 </div>
 
 // backgound image
-<div class="container" data-zina-src="image.png"></div>
+<div class="container" style="width: 100px;" data-zina-src="image.png"></div>
 ```
 
 After completion of the script zina
@@ -40,11 +41,11 @@ After completion of the script zina
 ```html
 // image
 <div class="container">
-  <img data-zina-src="image.png" src="https://site.com/image.png?w=100&h=50" />
+  <img width="100" data-zina-src="image.png" src="https://site.com/image.png?w=100" />
 </div>
 
 // backgound image
-<div class="container" data-zina-src="image.png" style="background-size: contain; backgound-image: url(https://site.com/image.png?w=100&h=50);"></div>
+<div class="container" data-zina-src="image.png" style="width: 100px; background-size: contain; backgound-image: url(https://site.com/image.png?w=100);"></div>
 ```
 
 
@@ -55,14 +56,13 @@ const open = () => {
   const node = document.getElementById('dynamicElement')
 
   node.style.display = "block"
-  window.zina.addItem(node) // add elem to zina
+  window.zina.process(node) // add elem to zina
 }
 
 const close = () => {
   const node = document.getElementById('dynamicElement')
 
   node.style.display = "none"
-  window.zina.removeItem(node) // remove elem from zina
 }
 
 <div id="dynamicElement" style="dispaly:none;">
@@ -81,19 +81,12 @@ You can add a zina class to a component in any way: global object, context, prop
 ```jsx harmony
 const Image = ({ src }) => {
   const imgRef = useRef(null)
-  const [ node, setNode ] = useState(null)
 
   useEffect(() => {
-    if (!node) {
-      zina.setElement(imgRef.current)
-      setNode(imgRef.current)
+    if (imgRef.current) {
+      zina.process(imgRef.current)
     }
-    else {
-      return () => {
-        zina.removeElement(node)
-      }
-    }
-  }, [ node ])
+  }, [])
 
   return (
     <div className={s.container}>
@@ -102,4 +95,3 @@ const Image = ({ src }) => {
   )
 }
 ```
-
