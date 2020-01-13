@@ -1,12 +1,12 @@
 type ZinaOpts = {
-  baseUrl: string
-  srcAttr: string
-  fallbackSrcAttr: string
-  resizeByAttr: string
-  loadingClass: string
-  widthQueryKey: string
-  heightQueryKey: string
-}
+  baseUrl?: string
+  srcAttr?: string
+  fallbackSrcAttr?: string
+  resizeByAttr?: string
+  loadingClass?: string
+  widthQueryKey?: string
+  heightQueryKey?: string
+} | null
 
 
 const setSrc = (node: HTMLImageElement, src: string) => {
@@ -29,7 +29,7 @@ const loadImage = (src: string, onLoad?: Function, onError?: Function) => {
   img.src = src
 }
 
-const defaultOpts = {
+export const defaultOpts = {
   baseUrl: '',
   srcAttr: 'data-zina-src',
   resizeByAttr: 'data-zina-resize-by',
@@ -39,8 +39,16 @@ const defaultOpts = {
   heightQueryKey: 'h',
 }
 
-function Zina(opts: ZinaOpts) {
+function Zina(opts: ZinaOpts = {}) {
   this.opts = { ...defaultOpts, ...opts }
+
+  // if smbd overrides default value with non string value
+  if (typeof this.opts.baseUrl !== 'string') {
+    throw new Error('"baseUrl" option should be String.')
+  }
+  else {
+    this.opts.baseUrl = this.opts.baseUrl.replace(/\/$/, '')
+  }
 }
 
 Zina.prototype.process = function(node: HTMLImageElement) {
@@ -85,12 +93,23 @@ Zina.prototype.process = function(node: HTMLImageElement) {
         const resizeKey   = resizeBy === 'width' ? this.opts.widthQueryKey : this.opts.heightQueryKey
         const resizeValue = resizeBy === 'width' ? node.clientWidth : node.clientHeight
 
-        const [ imagePath, initialQuery = '' ] = src.split('?')
+        let [ imagePath, initialQuery = '' ] = src.split('?')
 
-        const baseUrl     = /^(\/\/|http)/.test(imagePath) ? '' : this.opts.baseUrl
+        initialQuery = initialQuery
+          .replace(new RegExp(`${this.opts.widthQueryKey}=[0-9]+&?`), '')
+          .replace(new RegExp(`${this.opts.heightQueryKey}=[0-9]+&?`), '')
+
+        const isHref      = /^(\/\/|http)/.test(imagePath)
         const multiplier  = window.devicePixelRatio || 1
         const resizeQuery = `${resizeKey}=${resizeValue * multiplier}`
-        const modifiedSrc = `${baseUrl.replace(/\/$/, '')}/${imagePath.replace(/^\//, '')}?${resizeQuery}${initialQuery ? '&' : ''}${initialQuery}`
+        let modifiedSrc
+
+        if (isHref) {
+          modifiedSrc = `${imagePath}?${resizeQuery}${initialQuery ? '&' : ''}${initialQuery}`
+        }
+        else {
+          modifiedSrc = `${this.opts.baseUrl}/${imagePath.replace(/^\//, '')}?${resizeQuery}${initialQuery ? '&' : ''}${initialQuery}`
+        }
 
         loadImage(
           modifiedSrc,
