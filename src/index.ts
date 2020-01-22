@@ -20,7 +20,7 @@ const setSrc = (node: HTMLImageElement, src: string) => {
   }
 }
 
-const loadImage = (src: string, onLoad?: Function, onError?: Function) => {
+const loadImage = (src: string, onLoad: Function, onError: Function) => {
   const img = new Image()
 
   img.onload = () => onLoad()
@@ -51,7 +51,7 @@ function Zina(opts: ZinaOpts = {}) {
   }
 }
 
-Zina.prototype.process = function(node: HTMLImageElement) {
+Zina.prototype.process = function (node: HTMLImageElement) {
   if (!node) {
     console.error('Missed node element.')
   }
@@ -96,20 +96,17 @@ Zina.prototype.process = function(node: HTMLImageElement) {
         let [ imagePath, initialQuery = '' ] = src.split('?')
 
         initialQuery = initialQuery
-          .replace(new RegExp(`${this.opts.widthQueryKey}=[0-9]+&?`), '')
-          .replace(new RegExp(`${this.opts.heightQueryKey}=[0-9]+&?`), '')
+          .replace(new RegExp(`(${this.opts.widthQueryKey}|${this.opts.heightQueryKey})=[0-9]+&?`, 'g'), '')
+
+        initialQuery = initialQuery ? `&${initialQuery}` : ''
 
         const isHref      = /^(\/\/|http)/.test(imagePath)
         const multiplier  = window.devicePixelRatio || 1
         const resizeQuery = `${resizeKey}=${resizeValue * multiplier}`
-        let modifiedSrc
 
-        if (isHref) {
-          modifiedSrc = `${imagePath}?${resizeQuery}${initialQuery ? '&' : ''}${initialQuery}`
-        }
-        else {
-          modifiedSrc = `${this.opts.baseUrl}/${imagePath.replace(/^\//, '')}?${resizeQuery}${initialQuery ? '&' : ''}${initialQuery}`
-        }
+        const modifiedSrc = isHref
+          ? `${imagePath}?${resizeQuery}${initialQuery}`
+          : `${this.opts.baseUrl}/${imagePath.replace(/^\//, '')}?${resizeQuery}${initialQuery}`
 
         loadImage(
           modifiedSrc,
