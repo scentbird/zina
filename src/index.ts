@@ -102,7 +102,8 @@ Zina.prototype.process = function (node: HTMLImageElement) {
 
         const isHref      = /^(\/\/|http)/.test(imagePath)
         const multiplier  = window.devicePixelRatio || 1
-        const resizeQuery = `${resizeKey}=${resizeValue * multiplier}`
+        const value       = Math.ceil(resizeValue * multiplier)
+        const resizeQuery = `${resizeKey}=${value}`
 
         const modifiedSrc = isHref
           ? `${imagePath}?${resizeQuery}${initialQuery}`
