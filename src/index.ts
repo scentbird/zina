@@ -29,7 +29,7 @@ const loadImage = (src: string, onLoad: Function, onError: Function) => {
   img.src = src
 }
 
-export const defaultOpts = {
+const defaultOpts = {
   baseUrl: '',
   srcAttr: 'data-zina-src',
   resizeByAttr: 'data-zina-resize-by',

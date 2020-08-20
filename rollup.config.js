@@ -1,5 +1,5 @@
 import typescript from 'rollup-plugin-typescript2'
-import { terser } from 'rollup-plugin-terser'
+import { uglify } from 'rollup-plugin-uglify'
 import pkg from './package.json'
 
 
@@ -9,6 +9,7 @@ export default {
     {
       file: pkg.main,
       format: 'iife',
+      name: 'Zina',
     },
   ],
   external: [
@@ -19,10 +20,6 @@ export default {
     typescript({
       typescript: require('typescript'),
     }),
-    terser({
-      format: {
-        comments: false,
-      },
-    }),
+    uglify(),
   ],
 }

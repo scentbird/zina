@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Zina</title>
+  <style>
+    .image {
+      width: 150px;
+      height: 150px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <img class="image" alt="" data-zina-src="https://cdn.scentbird.com/product/desc/normal/img-1083.jpg" data-zina-resize-by="width">
+  <script src="https://cdn.scentbird.com/zina/2.0.6.js?v2"></script>
+  <script>
+    window.zina = new Zina({
+      baseUrl: 'https://cdn.scentbird.com/',
+    });
+
+    window.zina.processAll();
+  </script>
+
+</body>
+</html>
