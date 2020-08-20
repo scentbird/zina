@@ -61,10 +61,10 @@ Zina.prototype.process = function (node: HTMLImageElement) {
     const resizeBy      = node.getAttribute(this.opts.resizeByAttr)
 
     if (!src) {
-      console.error(`Missed node [${this.opts.srcAttr}] attribute.`)
+      console.error(`Missed node [${this.opts.srcAttr}] attribute.`, node)
     }
     else if (!resizeBy) {
-      console.error(`Missed node [${this.opts.resizeByAttr}] attribute.`)
+      console.error(`Missed node [${this.opts.resizeByAttr}] attribute.`, node)
       setSrc(node, src)
     }
     else if (resizeBy === 'width' && !node.clientWidth) {
