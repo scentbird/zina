@@ -1,13 +1,4 @@
-type ZinaOpts = {
-  baseUrl?: string
-  srcAttr?: string
-  fallbackSrcAttr?: string
-  resizeByAttr?: string
-  loadingClass?: string
-  widthQueryKey?: string
-  heightQueryKey?: string
-} | null
-
+const srcAttr = 'data-zina-src'
 
 const setSrc = (node: HTMLImageElement, src: string) => {
   const isImgTag = node.tagName === 'IMG'
@@ -29,26 +20,18 @@ const loadImage = (src: string, onLoad: Function, onError: Function) => {
   img.src = src
 }
 
-const defaultOpts = {
-  baseUrl: '',
-  srcAttr: 'data-zina-src',
-  resizeByAttr: 'data-zina-resize-by',
-  fallbackSrcAttr: 'data-zina-fallback-src',
-  loadingClass: 'zina-loading',
-  widthQueryKey: 'w',
-  heightQueryKey: 'h',
+type Opts = {
+  assetsPath: string
 }
 
-function Zina(opts: ZinaOpts = {}) {
-  this.opts = { ...defaultOpts, ...opts }
+function Zina(opts: Opts) {
+  this.opts = opts
 
-  // if smbd overrides default value with non string value
-  if (typeof this.opts.baseUrl !== 'string') {
-    throw new Error('"baseUrl" option should be String.')
+  if (typeof this.opts.assetsPath !== 'string') {
+    throw new Error('"assetsPath" is required.')
   }
-  else {
-    this.opts.baseUrl = this.opts.baseUrl.replace(/\/$/, '')
-  }
+
+  this.opts.assetsPath = this.opts.assetsPath.replace(/\/$/, '')
 }
 
 Zina.prototype.process = function (node: HTMLImageElement) {
@@ -56,68 +39,37 @@ Zina.prototype.process = function (node: HTMLImageElement) {
     console.error('Missed node element.')
   }
   else {
-    const src           = node.getAttribute(this.opts.srcAttr)
-    const fallbackSrc   = node.getAttribute(this.opts.fallbackSrcAttr)
-    const resizeBy      = node.getAttribute(this.opts.resizeByAttr)
+    const src = node.getAttribute(srcAttr)
 
     if (!src) {
-      console.error(`Missed node [${this.opts.srcAttr}] attribute.`, node)
+      console.error(`Missed node [${srcAttr}] attribute.`, node)
     }
-    else if (!resizeBy) {
-      console.error(`Missed node [${this.opts.resizeByAttr}] attribute.`, node)
-      setSrc(node, src)
-    }
-    else if (resizeBy === 'width' && !node.clientWidth) {
-      console.error('Node width is not recognized.', node)
-      setSrc(node, src)
-    }
-    else if (resizeBy === 'height' && !node.clientHeight) {
-      console.error('Node height is not recognized.', node)
+    if (!node.clientWidth && !node.clientHeight) {
+      console.error('Node width and height are not recognized.', node)
       setSrc(node, src)
     }
     else {
-      const onError = () => {
-        if (fallbackSrc) {
-          loadImage(
-            src,
-            () => setSrc(node, src),
-            () => setSrc(node, fallbackSrc)
-          )
-        }
-        else {
-          setSrc(node, src)
-        }
-      }
-
       try {
-        const resizeKey   = resizeBy === 'width' ? this.opts.widthQueryKey : this.opts.heightQueryKey
-        const resizeValue = resizeBy === 'width' ? node.clientWidth : node.clientHeight
+        const resizeKey = node.clientWidth ? 'w' : 'h'
+        const resizeValue = node.clientWidth ? node.clientWidth : node.clientHeight
 
-        let [ imagePath, initialQuery = '' ] = src.split('?')
+        let [ path, query = '' ] = src.replace(this.opts.assetsPath, '').replace(/^\//, '').split('?')
 
-        initialQuery = initialQuery
-          .replace(new RegExp(`(${this.opts.widthQueryKey}|${this.opts.heightQueryKey})=[0-9]+&?`, 'g'), '')
+        const multiplier = window.devicePixelRatio || 1
+        const value = Math.ceil(resizeValue * multiplier)
+        const options = `${resizeKey}=${value}`
 
-        initialQuery = initialQuery ? `&${initialQuery}` : ''
-
-        const isHref      = /^(\/\/|http)/.test(imagePath)
-        const multiplier  = window.devicePixelRatio || 1
-        const value       = Math.ceil(resizeValue * multiplier)
-        const resizeQuery = `${resizeKey}=${value}`
-
-        const modifiedSrc = isHref
-          ? `${imagePath}?${resizeQuery}${initialQuery}`
-          : `${this.opts.baseUrl}/${imagePath.replace(/^\//, '')}?${resizeQuery}${initialQuery}`
+        const modifiedSrc = `${this.opts.assetsPath}/cdn-cgi/image/${options}/${path}${query ? `?${query}` : ''}`
 
         loadImage(
           modifiedSrc,
           () => setSrc(node, modifiedSrc),
-          () => onError()
+          () => setSrc(node, src)
         )
       }
       catch (err) {
         console.error(err)
-        onError()
+        setSrc(node, src)
       }
     }
   }
