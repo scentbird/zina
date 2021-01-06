@@ -15,7 +15,7 @@ const loadImage = (src: string, onLoad: Function, onError: Function) => {
   const img = new Image()
 
   img.onload = () => onLoad()
-  img.onerror = () => onError()
+  img.onerror = (err) => onError(err)
 
   img.src = src
 }
@@ -55,12 +55,16 @@ Zina.prototype.modifySrc = function (src, resizeKey, resizeValue) {
   return `${cdnPath}.com/cdn-cgi/image/${options}${folderPath}/${path}${query ? `?${query}` : ''}`
 }
 
-Zina.prototype.process = function (node: HTMLImageElement) {
+Zina.prototype.process = function (node: HTMLImageElement, callback?: (src: string) => void) {
   if (!node) {
     console.error('Missed node element.')
   }
   else {
     const src = node.getAttribute(srcAttr)
+
+    if (!callback) {
+      callback = () => {}
+    }
 
     if (!src) {
       console.error(`Missed node [${srcAttr}] attribute.`, node)
@@ -77,13 +81,21 @@ Zina.prototype.process = function (node: HTMLImageElement) {
 
         loadImage(
           modifiedSrc,
-          () => setSrc(node, modifiedSrc),
-          () => setSrc(node, src)
+          () => {
+            setSrc(node, modifiedSrc)
+            callback(modifiedSrc)
+          },
+          (err) => {
+            console.error(err)
+            setSrc(node, src)
+            callback(src)
+          }
         )
       }
       catch (err) {
         console.error(err)
         setSrc(node, src)
+        callback(src)
       }
     }
   }
