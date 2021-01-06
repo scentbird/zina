@@ -34,6 +34,27 @@ function Zina(opts: Opts) {
   this.opts.assetsPath = this.opts.assetsPath.replace(/\/$/, '')
 }
 
+Zina.prototype.modifySrc = function (src, resizeKey, resizeValue) {
+  if (!resizeKey || !resizeValue) {
+    return src
+  }
+
+  const [ path, query = '' ] = src.replace(this.opts.assetsPath, '').replace(/^\//, '').split('?')
+  const [ cdnPath, folderPath ] = this.opts.assetsPath.split('.com')
+
+  // if src path doesn't contain domain path different from "assetsPath" then it won't be replaced and to prevent
+  // returning incorrect url need to return initial "src"
+  if (/^http/.test(path)) {
+    return src
+  }
+
+  const multiplier = window.devicePixelRatio || 1
+  const value = Math.ceil(resizeValue * multiplier)
+  const options = `${resizeKey}=${value}`
+
+  return `${cdnPath}.com/cdn-cgi/image/${options}${folderPath}/${path}${query ? `?${query}` : ''}`
+}
+
 Zina.prototype.process = function (node: HTMLImageElement) {
   if (!node) {
     console.error('Missed node element.')
@@ -52,14 +73,7 @@ Zina.prototype.process = function (node: HTMLImageElement) {
       try {
         const resizeKey = node.clientWidth ? 'w' : 'h'
         const resizeValue = node.clientWidth ? node.clientWidth : node.clientHeight
-
-        let [ path, query = '' ] = src.replace(this.opts.assetsPath, '').replace(/^\//, '').split('?')
-
-        const multiplier = window.devicePixelRatio || 1
-        const value = Math.ceil(resizeValue * multiplier)
-        const options = `${resizeKey}=${value}`
-
-        const modifiedSrc = `${this.opts.assetsPath}/cdn-cgi/image/${options}/${path}${query ? `?${query}` : ''}`
+        const modifiedSrc = this.modifySrc(src, resizeKey, resizeValue)
 
         loadImage(
           modifiedSrc,

@@ -10,7 +10,7 @@ the pixel density of the user's screen.
 import Zina from 'zina'
 
 window.zina = new Zina({
-  assetsPath: 'https://nest.scentbird.com/',
+  assetsPath: 'https://nest.scentbird.com/frontbird/',
 })
 
 window.zina.processAll() // execute script on existing images
@@ -25,12 +25,14 @@ Containers must be sized for the image. You need to add styles for this.
 
 ```html
 <img width="100" data-zina-src="image.jpg" />
+<img width="100" data-zina-src="https://nest.scentbird.com/frontbird/image.jpg" />
 ```
 
 After completion of the script zina
 
 ```html
-<img width="100" data-zina-src="image.png" src="https://nest.scentbird.com/cdn-cgi/image/w=100/image.jpg" />
+<img width="100" data-zina-src="image.png" src="https://nest.scentbird.com/cdn-cgi/image/w=100/frontbird/image.jpg" />
+<img width="100" data-zina-src="image.png" src="https://nest.scentbird.com/cdn-cgi/image/w=100/frontbird/image.jpg" />
 ```
 
 
