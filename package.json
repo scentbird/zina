@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "test": "jest",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "prepublish": "npm run test && npm run build"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
