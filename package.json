@@ -1,6 +1,6 @@
 {
   "name": "@scentbird/zina",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Image resizer",
   "repository": "https://github.com/scentbird/zina.git",
   "author": "Pavel Ivanov <grammka@gmail.com>",
