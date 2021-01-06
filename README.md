@@ -1,5 +1,8 @@
 # Zina
 
+`Zina` loads an image of the required size, automatically detecting
+the pixel density of the user's screen.
+
 
 #### Initial setup
 
