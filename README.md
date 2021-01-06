@@ -7,18 +7,12 @@
 import Zina from 'zina'
 
 window.zina = new Zina({
-  baseUrl: 'https://cdn.domain.com/',
-  srcAttr: 'data-zina-src',
-  resizeByAttr: 'data-zina-resize-by',
-  fallbackSrcAttr: 'data-zina-fallback-src',
-  loadingClass: 'zina-loading',
-  widthQueryKey: 'w',
-  heightQueryKey: 'h',
+  assetsPath: 'https://nest.scentbird.com/',
 })
 
 window.zina.processAll() // execute script on existing images
 
-window.zina.process(someImageNode) // execute script on demand
+window.zina.process(imageNode) // execute script on demand
 ```
 
 
@@ -27,25 +21,13 @@ window.zina.process(someImageNode) // execute script on demand
 Containers must be sized for the image. You need to add styles for this.
 
 ```html
-// image
-<div class="container">
-  <img width="100" data-zina-src="image.png" />
-</div>
-
-// backgound image
-<div class="container" style="width: 100px;" data-zina-src="image.png"></div>
+<img width="100" data-zina-src="image.jpg" />
 ```
 
 After completion of the script zina
 
 ```html
-// image
-<div class="container">
-  <img width="100" data-zina-src="image.png" src="https://site.com/image.png?w=100" />
-</div>
-
-// backgound image
-<div class="container" data-zina-src="image.png" style="width: 100px; background-size: contain; backgound-image: url(https://site.com/image.png?w=100);"></div>
+<img width="100" data-zina-src="image.png" src="https://nest.scentbird.com/cdn-cgi/image/w=100/image.jpg" />
 ```
 
 
