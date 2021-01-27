@@ -40,7 +40,7 @@ Zina.prototype.modifySrc = function (src, resizeKey, resizeValue) {
   }
 
   const [ path, query = '' ] = src.replace(this.opts.assetsPath, '').replace(/^\//, '').split('?')
-  const [ cdnPath, folderPath ] = this.opts.assetsPath.split('.com')
+  const [ cdnPath, folderPath = '' ] = this.opts.assetsPath.split('.com')
 
   // if src path doesn't contain domain path different from "assetsPath" then it won't be replaced and to prevent
   // returning incorrect url need to return initial "src"
@@ -55,7 +55,7 @@ Zina.prototype.modifySrc = function (src, resizeKey, resizeValue) {
   return `${cdnPath}.com/cdn-cgi/image/${options}${folderPath}/${path}${query ? `?${query}` : ''}`
 }
 
-Zina.prototype.process = function (node: HTMLImageElement, callback?: (src: string) => void) {
+Zina.prototype.process = function (node: HTMLImageElement, callback?: (src: string, err?: Error) => void) {
   if (!node) {
     console.error('Missed node element.')
   }
@@ -86,9 +86,9 @@ Zina.prototype.process = function (node: HTMLImageElement, callback?: (src: stri
             callback(modifiedSrc)
           },
           (err) => {
-            console.error(err)
+            console.error(`Failed to load "${modifiedSrc}" image.`)
             setSrc(node, src)
-            callback(src)
+            callback(src, err)
           }
         )
       }
